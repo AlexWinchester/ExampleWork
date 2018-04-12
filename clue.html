@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <!-- Alexander Winchester, SER 421 -->
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+        <meta name="description" content="">
+        <style>
+        </style>
+        <script src="clue.js"></script>
+    </head>
+    <body>
+        <h1 id="Clue"></h1>
+        <p id="choices"></p>
+        <p id="hello">
+            Name:
+            <input type='text' id= 'nameInput' placeholder='Insert Name Here'>
+            <button id='nameButton' onclick="startGame()">Enter</button>
+        </p>
+        <p id="guess">
+            Guess Suspect: <select id="suspectSelect"></select></br>
+            Guess Room: <select id="roomSelect"></select></br>
+            Guess Weapon: <select id="weaponSelect"></select></br>
+             <button id='guessButton' onclick="playerGuess()" disabled>Guess</button>
+        </p>
+        <p id="game"></p>
+        <button id='historyButton' onclick="toggleHistory()">Show History</button>
+        <button id='scoreButton' onclick="toggleScore()">Show Score</button>
+        <p id="guessHistory"></p>
+        <p id="score"></p>
+        <p id="debug"></p>
+        
+    </body>
+    
+</html>

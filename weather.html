@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+    <!-- Alexander Winchester, SER 421 -->
+    <head>
+        <style>
+            table, th, td {
+                border: 1px solid black;
+                border-collapse: collapse;
+            }   
+            th, td {
+                padding: 15px;
+            }
+            th {
+                text-align: center;
+            }
+        </style>
+        <script type="text/javascript">
+                            /*  lab5.js
+                    Alexander Winchester
+                    Lab 5 Activity 1
+                    SER 421
+                */
+                function refreshTable() {
+                    setCity1();
+                    setCity2();
+                    // only set city3 if a city has been chosen
+                    if (document.getElementById("city3Name"))
+                        setCity3();
+                    else {
+                        getTemperatures();
+                        getHumidities();
+                        getNicestAndWorst();
+                    }
+                }
+
+                function setCity1() {
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4) {
+                            if (this.status == 200) {
+                                var json = JSON.parse(this.response);
+                                document.getElementById("city1Time").innerHTML = getTime(json);
+                                document.getElementById("city1Temperature").innerHTML = getTemperature(json).toFixed(2);
+                                document.getElementById("city1Humidity").innerHTML = getHumidity(json);
+                                document.getElementById("city1Wind").innerHTML = getWind(json);
+                                document.getElementById("city1Cloud").innerHTML = getCloud(json);
+                                if (localStorage.city1Current != undefined && localStorage.city1Current !== this.response)
+                                    localStorage.city1Past = localStorage.city1Current;
+                                localStorage.city1Current = this.response;
+                                setCity1Change();
+                            }
+                            else {
+                            // error
+                            document.getElementById("error").innerHTML = "Error " + this.status
+                                + " : " + this.statusText;        
+                            }
+                        }
+
+                    };
+
+                        xhttp.open("GET", "http://api.openweathermap.org/data/2.5/weather?q=London&APPID=547de9253af72a7e72132bc0d7b131e0", true);
+                        xhttp.send();
+
+                }
+
+                function setCity2() {
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4) {
+                            if (this.status == 200) {
+                                var json = JSON.parse(this.response);
+                                document.getElementById("city2Time").innerHTML = getTime(json);
+                                document.getElementById("city2Temperature").innerHTML = getTemperature(json).toFixed(2);
+                                document.getElementById("city2Humidity").innerHTML = getHumidity(json);
+                                document.getElementById("city2Wind").innerHTML = getWind(json);
+                                document.getElementById("city2Cloud").innerHTML = getCloud(json);
+                                if (localStorage.city2Current != undefined && localStorage.city2Current !== this.response)
+                                    localStorage.city2Past = localStorage.city2Current;
+                                localStorage.city2Current = this.response;
+                                setCity2Change();
+                            }
+                            else {
+                            // error
+                            document.getElementById("error").innerHTML = "Error " + this.status
+                                + " : " + this.statusText;        
+                            }
+                        }
+                    };
+                        xhttp.open("GET", "http://api.openweathermap.org/data/2.5/weather?q=phoenix&APPID=547de9253af72a7e72132bc0d7b131e0", true);
+                        xhttp.send();
+                }
+
+                function setCity3() {
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4) {
+                            if (this.status == 200) {
+                                var json = JSON.parse(this.response);
+                                var row = "<td>" + getName(json) + "</td>";
+                                document.getElementById("city3").innerHTML = 
+                                    "<td id='city3Name'>" + getName(json) + "</td>" 
+                                    + "<td>" + getTime(json) + "</td>" 
+                                    + "<td>" + getTemperature(json).toFixed(2) + "</td>" 
+                                    + "<td>" + getHumidity(json) + "</td>" 
+                                    + "<td>" + getWind(json) + "</td>" 
+                                    + "<td>" + getCloud(json) + "</td>";
+                                if (localStorage.city3Current != undefined && localStorage.city3Current !== this.response) {
+                                    localStorage.city3Past = localStorage.city3Current;
+                                    localStorage.city3Current = this.response;
+                                    var jsonPast = JSON.parse(localStorage.city3Past);
+                                    if (jsonPast.name === json.name)
+                                        setCity3Change();
+                                }
+                                else {
+                                    localStorage.city3Current = this.response;
+                                    document.getElementById("city3Change").innerHTML = "";
+                                }
+                                getTemperatures();
+                                getHumidities();
+                                getNicestAndWorst();
+                                document.getElementById("error").innerHTML = "";
+                            }
+                            else {
+                            // error
+                            document.getElementById("error").innerHTML = "Error " + this.status
+                                + " : " + this.statusText;        
+                            }
+                        }
+
+                    };
+                        var path = "http://api.openweathermap.org/data/2.5/weather?q=" + document.getElementById("city3Select").value + "&APPID=547de9253af72a7e72132bc0d7b131e0";
+                        xhttp.open("GET", path, true);
+                        xhttp.send();
+                }
+
+                function setCity1Change() {
+                    var city1Current = JSON.parse(localStorage.city1Current);
+                    var city1Past = JSON.parse(localStorage.city1Past);
+                    var timeElapsed = (city1Current.dt - city1Past.dt)/60; 
+                    var temperatureChange = city1Current.main.temp - city1Past.main.temp;        
+                    var humidityChange = getHumidity(city1Current)  -  getHumidity(city1Past);
+                    var windChange = getWind(city1Current)  -  getWind(city1Past);
+                    var cloudChange = getCloud(city1Current)  -  getCloud(city1Past);
+                    document.getElementById("city1Change").innerHTML = 
+                            "<td>" + getName(city1Current) + "</td>" 
+                            + "<td>" + timeElapsed + " Minutes ago"+"</td>" 
+                            + "<td>" + temperatureChange.toFixed(2) + "</td>" 
+                            + "<td>" + humidityChange + "</td>" 
+                            + "<td>" + windChange.toFixed(2) + "</td>" 
+                            + "<td>" + cloudChange + "</td>";
+
+                }
+
+                function setCity2Change() {
+                    var city2Current = JSON.parse(localStorage.city2Current);
+                    var city2Past = JSON.parse(localStorage.city2Past);
+                    var timeElapsed = (city2Current.dt - city2Past.dt)/60; 
+                    var temperatureChange = city2Current.main.temp - city2Past.main.temp;        
+                    var humidityChange = getHumidity(city2Current)  -  getHumidity(city2Past);
+                    var windChange = getWind(city2Current)  -  getWind(city2Past);
+                    var cloudChange = getCloud(city2Current)  -  getCloud(city2Past);
+                    document.getElementById("city2Change").innerHTML = 
+                            "<td>" + getName(city2Current) + "</td>" 
+                            + "<td>" + timeElapsed + " Minutes ago"+"</td>" 
+                            + "<td>" + temperatureChange.toFixed(2) + "</td>" 
+                            + "<td>" + humidityChange + "</td>" 
+                            + "<td>" + windChange.toFixed(2) + "</td>" 
+                            + "<td>" + cloudChange + "</td>";
+                }
+
+                function setCity3Change() {
+                    var city3Current = JSON.parse(localStorage.city3Current);
+                    var city3Past = JSON.parse(localStorage.city3Past);
+                    var timeElapsed = (city3Current.dt - city3Past.dt)/60; 
+                    var temperatureChange = city3Current.main.temp - city3Past.main.temp;        
+                    var humidityChange = getHumidity(city3Current)  -  getHumidity(city3Past);
+                    var windChange = getWind(city3Current)  -  getWind(city3Past);
+                    var cloudChange = getCloud(city3Current)  -  getCloud(city3Past);
+                    document.getElementById("city3Change").innerHTML = 
+                            "<td>" + getName(city3Current) + "</td>" 
+                            + "<td>" + timeElapsed + " Minutes ago"+"</td>" 
+                            + "<td>" + temperatureChange.toFixed(2) + "</td>" 
+                            + "<td>" + humidityChange + "</td>" 
+                            + "<td>" + windChange.toFixed(2) + "</td>" 
+                            + "<td>" + cloudChange + "</td>";
+                }
+
+                function getName(json) {
+                    return json.name + ", " + json.sys.country;
+                }    
+
+                function getTime(json){
+                    var time = new Date(json.dt * 1000);
+                    return time.getFullYear() + "/" + (time.getMonth() +1) +"/" + time.getDate() + " " + time.getHours() + ":" + time.getMinutes();
+
+                }
+
+                function getTemperature(json) {
+                    var temp = json.main.temp;
+                    // convert K to C
+                    temp -= 273.15;
+                    return temp;
+
+                }
+                function getHumidity(json) {
+                    return json.main.humidity;
+                }
+                function getWind(json) {
+                    var wind = json.wind.speed;
+                    // convert mps to mph
+                    wind = 2.23694 * wind;
+                    return wind.toFixed(2);
+                }
+                function getCloud(json) {
+                    return json.clouds.all;
+                }
+
+                function getTemperatures() {
+                    var city1 = JSON.parse(localStorage.city1Current);
+                    var city2 = JSON.parse(localStorage.city2Current);
+                    var cities = 2;
+                    var avg = getTemperature(city1) + getTemperature(city2);
+                    // only include city3 if a city has been chosen
+                    if (document.getElementById("city3Name")) {
+                        var city3 = JSON.parse(localStorage.city3Current);
+                        avg += getTemperature(city3);
+                        cities += 1;
+                    }
+                    avg /= cities;
+                    if (city3){
+                        var hottestTemp = Math.max(getTemperature(city1), getTemperature(city2),    getTemperature(city3));
+                        var hottestCity;
+                        if (hottestTemp === getTemperature(city1))
+                            hottestCity = getName(city1);
+                        else if(hottestTemp === getTemperature(city2))
+                            hottestCity = getName(city2);
+                        else 
+                            hottestCity = getName(city3);
+                    }
+                    else {
+                        hottestTemp = Math.max(getTemperature(city1), getTemperature(city2));
+                        hottestCity;
+                        if (hottestTemp === getTemperature(city1))
+                            hottestCity = getName(city1);
+                        else 
+                            hottestCity = getName(city2);
+                    }
+
+                    document.getElementById("temperatures").innerHTML = "Average temperature is " + avg.toFixed(2) + " and the hottest city is " + hottestCity;
+
+                }
+                function getHumidities() {
+                    var city1 = JSON.parse(localStorage.city1Current);
+                    var city2 = JSON.parse(localStorage.city2Current);
+                    var cities = 2;
+                    var avg = getHumidity(city1) + getHumidity(city2);
+                    // only include city3 if a city has been chosen
+                    if (document.getElementById("city3Name")) {
+                        var city3 = JSON.parse(localStorage.city3Current);
+                        avg += getHumidity(city3);
+                        cities += 1;
+                    }
+                    avg /= cities;
+                    if (city3){
+                        var mostHumidity = Math.max(getHumidity(city1), getHumidity(city2),    getHumidity(city3));
+                        if (mostHumidity === getHumidity(city1))
+                            var humidCity = getName(city1);
+                        else if(mostHumidity === getHumidity(city2))
+                            humidCity = getName(city2);
+                        else 
+                            humidCity = getName(city3);
+                    }
+                    else {
+                        mostHumidity = Math.max(getHumidity(city1), getHumidity(city2));
+                        if (mostHumidity === getHumidity(city1))
+                            humidCity = getName(city1);
+                        else 
+                            humidCity = getName(city2);
+                    }
+
+                    document.getElementById("humidities").innerHTML = "Average humidity is " + avg.toFixed(2) + " and the most humid city is " + humidCity;
+
+                }
+
+                function getNicestAndWorst() {
+                    var city1 = JSON.parse(localStorage.city1Current);
+                    var city2 = JSON.parse(localStorage.city2Current);
+                    var cities = 2;
+                    // only include city3 if a city has been chosen
+                    // city3 exists
+                    if (document.getElementById("city3Name")){
+                        var city3 = JSON.parse(localStorage.city3Current);
+                        cities += 1;
+                        var rating = [0,0,0];
+                        //compare temperatures - higher is better
+                        var hottestCity = Math.max(getTemperature(city1), getTemperature(city2),    getTemperature(city3));
+                        if (hottestCity === getTemperature(city1))
+                            rating[0]++;
+                        else if(hottestCity === getTemperature(city2))
+                            rating[1]++;
+                        else 
+                            rating[2]++;
+                        //compare humidities - less is better
+                        var leastHumidity = Math.min(getHumidity(city1), getHumidity(city2),    getHumidity(city3));
+                        if (leastHumidity === getHumidity(city1))
+                            rating[0]++;
+                        else if(leastHumidity === getHumidity(city2))
+                            rating[1]++;
+                        else 
+                            rating[2]++;
+                        //compare windspeed - less is better
+                        var leastWind = Math.min(getWind(city1), getWind(city2), getWind(city3));
+                        if (leastWind === getWind(city1))
+                            rating[0]++;
+                        else if(leastWind === getWind(city2))
+                            rating[1]++;
+                        else 
+                            rating[2]++;
+                        //compare cloud - less is better
+                        var leastCloud = Math.min(getCloud(city1), getCloud(city2), getCloud(city3));
+                        if (leastCloud === getCloud(city1))
+                            rating[0]++;
+                        else if(leastCloud === getCloud(city2))
+                            rating[1]++;
+                        else 
+                            rating[2]++;
+                    }
+                    else {
+                        rating = [0,0];
+                        //compare temperatures - higher is better
+                        hottestCity = Math.max(getTemperature(city1), getTemperature(city2));
+                        if (hottestCity === getTemperature(city1))
+                            rating[0]++;
+                        else
+                            rating[1]++;
+                        // compare humidities
+                        leastHumidity = Math.min(getHumidity(city1), getHumidity(city2));
+                        if (leastHumidity === getHumidity(city1))
+                            rating[0]++;
+                        else 
+                            rating[1]++;
+                        //compare windspeed - less is better
+                        leastWind = Math.min(getWind(city1), getWind(city2));
+                        if (leastWind === getWind(city1))
+                            rating[0]++;
+                        else
+                            rating[1]++;
+                        //compare cloud - less is better
+                        leastCloud = Math.min(getCloud(city1), getCloud(city2));
+                        if (leastCloud === getCloud(city1))
+                            rating[0]++;
+                        else
+                            rating[1]++;
+
+
+                    }
+
+                    var bestRating = Math.max(...rating);
+                    var worstRating = Math.min(...rating);
+
+                    // get best city
+                    if (bestRating === rating[0])
+                        var bestCity = getName(city1);
+                    else if (bestRating === rating[1])
+                        bestCity = getName(city2);
+                    else 
+                        bestCity = getName(city3);
+
+                    // get worst city
+                    if (worstRating === rating[0])
+                        var worstCity = getName(city1);
+                    else if (worstRating === rating[1])
+                        worstCity = getName(city2);
+                    else 
+                        worstCity = getName(city3);
+
+                    document.getElementById("nicest").innerHTML = "The city with the nicest weather is " + bestCity;
+                    document.getElementById("worst").innerHTML = "The city with the worst weather is " + worstCity;
+                }
+
+        
+        </script>
+    </head>
+    <body onload="refreshTable();">
+        <div id="error"></div>
+        <table style="width:100%">
+          <tr>
+            <th>City Name</th>
+            <th>Timestamp (yyyy/mm/dd hh:mm)</th>
+            <th>Temperature in &#176;C</th>
+            <th>Humidity in %</th>
+            <th>Wind Speed in miles per hour</th>
+            <th>Cloudiness in %</th>
+          </tr>
+          <tr id="city1">
+            <td>London, GB</td>
+                <td id="city1Time"></td>
+                <td id="city1Temperature"></td>
+                <td id="city1Humidity"></td>
+                <td id="city1Wind"></td>
+                <td id="city1Cloud"></td> 
+          </tr>
+            <tr id="city1Change"></tr>
+          <tr id="city2">
+            <td>Phoenix, US</td>
+                <td id="city2Time"></td>
+                <td id="city2Temperature"></td>
+                <td id="city2Humidity"></td>
+                <td id="city2Wind"></td>
+                <td id="city2Cloud"></td> 
+          </tr>
+            <tr id="city2Change"></tr>                   
+            <tr id="city3"></tr>
+            <tr id="city3Change"></tr>
+        </table>
+        <p id = "city3Chooser"> 
+            Please select a third city :
+            <select id="city3Select" onchange="setCity3()">
+                <option value="boston">Boston</option>
+                <option value="Atlanta">Atlanta</option>
+                <option value="Shanghai">Shanghai</option>
+                <option value="Budapest">Budapest</option>
+                <option value="Sydney">Sydney</option>
+            </select>
+        </p>
+        <button type="button" onclick="refreshTable()">Refresh</button>
+        <div id="temperatures"></div>
+        <div id="humidities"></div>
+        <div id="nicest"></div>
+        <div id="worst"></div>
+    </body>
+</html>
